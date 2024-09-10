@@ -130,7 +130,7 @@ void loop() {
     if (tempHighAlert == true && getTempF() < 100) {
       bot.sendMessage(chat_id, "Air temperature has normalized");
       tempHighAlert = false;
-    }*/
+    }
     // Alerts for low air temp
     if (getTempF() <= 32 && tempLowAlert == false) {
       bot.sendMessage(chat_id, "ALERT: Air temperature is dangerously low!");
