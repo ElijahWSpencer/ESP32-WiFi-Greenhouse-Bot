@@ -34,10 +34,10 @@ bool humLowAlert = false;
 bool waterHighAlert = false;
 bool waterLowAlert = false;
 
-const char* ssid = "Barn WiFi";
-const char* password = "barnwifi";
-String BOTtoken = "7445052996:AAFx15EJYEkN2EpcW5xM2qC-P38_nUYX8QU";
-String chat_id = "7116145027";
+const char* ssid = XXXXX;
+const char* password = XXXXX;
+String BOTtoken = XXXXX;
+String chat_id = XXXXX;
 
 WiFiClientSecure secured_client;
 UniversalTelegramBot bot(BOTtoken, secured_client);
