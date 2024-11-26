@@ -33,11 +33,15 @@ bool humHighAlert = false;
 bool humLowAlert = false;
 bool waterHighAlert = false;
 bool waterLowAlert = false;
+float prevTempF = 0;
+int prevHumidity = 0;
+float prevWaterTempF = 0;
+unsigned long lastStatusCheck;
 
-const char* ssid = XXXXX;
-const char* password = XXXXX;
-String BOTtoken = XXXXX;
-String chat_id = XXXXX;
+const char* ssid = "XXXXX";
+const char* password = "XXXXX";
+String BOTtoken = "XXXXX";
+String chat_id = "XXXXX";
 
 WiFiClientSecure secured_client;
 UniversalTelegramBot bot(BOTtoken, secured_client);
@@ -59,14 +63,51 @@ void handleNewMessages(int numNewMessages) {
     }
 
     if (text == "status") {
-      String STATUS = "Temperature (F): ";
+      unsigned long currTime = millis();
+      unsigned long lastTime = (lastStatusCheck == 0) ? 0 : (currTime - lastStatusCheck) / 1000;
+      String lastTimeString;
+
+      // Track the previous time 'status' was called by user
+      if (lastTime < 60) {
+        lastTimeString = String(lastTime) + " seconds ago";
+      }
+      else if (lastTime < 3600) {
+        lastTimeString = String(lastTime / 60) + " minutes, " + String(lastTime % 60) + " seconds ago";
+      }
+      else if (lastTime < 86400) {
+        lastTimeString = String(lastTime / 3600) + " hours, " + String(lastTime % 3600) + " minutes, " + String(lastTime % 60) + " seconds ago";
+      }
+      else if (lastTime < 2592000) {
+        lastTimeString = String(lastTime / 86400) + " days, " + String(lastTime % 86400) + " hours, " + String(lastTime % 3600) + " minutes, " + String(lastTime % 60) + " seconds ago";
+      }
+      else if (lastTime < 31536000) {
+        lastTimeString = String(lastTime / 2592000) + " months, " + String(lastTime % 2592000) + "days, " + String(lastTime % 86400) + " hours, " + String(lastTime % 3600) + " minutes, " + String(lastTime % 60) + " seconds ago";
+      }
+      else {
+        lastTimeString = String(lastTime / 31536000) + " years, " + String(lastTime % 31536000) + " months, " + String(lastTime % 2592000) + " days, " + String(lastTime % 86400) + " hours, " + String(lastTime % 3600) + " minutes, " + String(lastTime % 60) + " seconds ago. Whew! It's been a while, hasn't it?";
+      }
+
+      String prevStatus = "Last status check: " + lastTimeString;
+      prevStatus += "\nPrevious Temperature (F): ";
+      prevStatus += prevTempF;
+      prevStatus += "\nPrevious Humidity: ";
+      prevStatus += prevHumidity;
+      prevStatus += "%";
+      prevStatus += "\nPrevious Water Temp (F): ";
+      prevStatus += prevWaterTempF;
+      prevTempF = getTempF();
+      prevHumidity = getHumidity();
+      prevWaterTempF = getWaterTempF();
+      String STATUS = "Current Temperature (F): ";
       STATUS += getTempF();
-      STATUS += "\nHumidity: ";
+      STATUS += "\nCurrent Humidity: ";
       STATUS += getHumidity();
       STATUS += "%";
-      STATUS += "\nWater Temp (F): ";
+      STATUS += "\nCurrent Water Temp (F): ";
       STATUS += getWaterTempF();
+      bot.sendMessage(chat_id, prevStatus);
       bot.sendMessage(chat_id, STATUS);
+      lastStatusCheck = currTime;
       delay(500);
     }
   }
@@ -121,7 +162,6 @@ void loop() {
     getTempF();
     getHumidity();
     getWaterTempF();
-
     // Alerts for high air temp
     if (getTempF() >= 100 && tempHighAlert == false) {
       bot.sendMessage(chat_id, "ALERT: Air temperature is dangerously high!");
