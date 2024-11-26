@@ -6,7 +6,7 @@ This project was made in order to allow easy viewing of temperature and humidity
 
 Sending **'status'** to the bot will trigger it to send the information.
 
-![Screenshot_20240910_100429_Telegram](https://github.com/user-attachments/assets/9ddf476a-02f5-45a4-8864-a3341edffc2f)
+![Screenshot_20241126_160417_Telegram](https://github.com/user-attachments/assets/ae58207b-ae52-4448-9a92-04d56df3c3e9)
 
 
 Alerts are also set to be sent when levels reach a particular high or low level. An alert is then sent again whenever levels normalize.
