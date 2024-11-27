@@ -50,6 +50,30 @@ UniversalTelegramBot bot(BOTtoken, secured_client);
 int botRequestDelay = 1000;
 unsigned long lastTimeBotRan;
 
+String giveElapsedTime(unsigned long elapsedSecs) {
+  unsigned long years = elapsedSecs / 31536000;
+  elapsedSecs %= 31536000;
+  unsigned long months = elapsedSecs / 2592000;
+  elapsedSecs %= 2592000;
+  unsigned long days = elapsedSecs / 86400;
+  elapsedSecs %= 86400;
+  unsigned long hours = elapsedSecs / 3600;
+  elapsedSecs %= 3600;
+  unsigned long mins = elapsedSecs / 60;
+  elapsedSecs %= 60;
+  unsigned long secs = elapsedSecs;
+
+  String elapsedTime = "";
+  if (years > 0) elapsedTime += String(years) + " year" + (years != 1 ? "s" : "") + ", ";
+  if (months > 0) elapsedTime += String(months) + " month" + (months != 1 ? "s" : "") + ", ";
+  if (days > 0) elapsedTime += String(days) + " day" + (days != 1 ? "s" : "") + ", ";
+  if (hours > 0) elapsedTime += String(hours) + " hour" + (hours != 1 ? "s" : "") + ", ";
+  if (mins > 0) elapsedTime += String(mins) + " minute" + (mins != 1 ? "s" : "") + ", ";
+  elapsedTime += String(secs) + " second" + (secs != 1 ? "s" : "");
+  if (years > 0) elapsedTime += ". Whew! It's been a while, hasn't it?";
+  return elapsedTime;
+}
+
 void handleNewMessages(int numNewMessages) {
   Serial.println("handleNewMessages");
   Serial.println(String(numNewMessages));
@@ -65,27 +89,7 @@ void handleNewMessages(int numNewMessages) {
     if (text == "status") {
       unsigned long currTime = millis();
       unsigned long lastTime = (lastStatusCheck == 0) ? 0 : (currTime - lastStatusCheck) / 1000;
-      String lastTimeString;
-
-      // Track the previous time 'status' was called by user
-      if (lastTime < 60) {
-        lastTimeString = String(lastTime) + " seconds ago";
-      }
-      else if (lastTime < 3600) {
-        lastTimeString = String(lastTime / 60) + " minutes, " + String(lastTime % 60) + " seconds ago";
-      }
-      else if (lastTime < 86400) {
-        lastTimeString = String(lastTime / 3600) + " hours, " + String(lastTime % 3600) + " minutes, " + String(lastTime % 60) + " seconds ago";
-      }
-      else if (lastTime < 2592000) {
-        lastTimeString = String(lastTime / 86400) + " days, " + String(lastTime % 86400) + " hours, " + String(lastTime % 3600) + " minutes, " + String(lastTime % 60) + " seconds ago";
-      }
-      else if (lastTime < 31536000) {
-        lastTimeString = String(lastTime / 2592000) + " months, " + String(lastTime % 2592000) + "days, " + String(lastTime % 86400) + " hours, " + String(lastTime % 3600) + " minutes, " + String(lastTime % 60) + " seconds ago";
-      }
-      else {
-        lastTimeString = String(lastTime / 31536000) + " years, " + String(lastTime % 31536000) + " months, " + String(lastTime % 2592000) + " days, " + String(lastTime % 86400) + " hours, " + String(lastTime % 3600) + " minutes, " + String(lastTime % 60) + " seconds ago. Whew! It's been a while, hasn't it?";
-      }
+      String lastTimeString = giveElapsedTime(lastTime);
 
       String prevStatus = "Last status check: " + lastTimeString;
       prevStatus += "\nPrevious Temperature (F): ";
