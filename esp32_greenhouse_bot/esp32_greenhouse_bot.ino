@@ -33,6 +33,15 @@ bool humHighAlert = false;
 bool humLowAlert = false;
 bool waterHighAlert = false;
 bool waterLowAlert = false;
+bool sendTempAlerts = false;
+bool sendHumAlerts = false;
+bool sendWaterAlerts = false;
+float airTempMin = 32;
+float airTempMax = 100;
+int airHumMin = 40;
+int airHumMax = 95;
+float waterTempMin = 40;
+float waterTempMax = 94;
 float prevTempF = 0;
 int prevHumidity = 0;
 float prevWaterTempF = 0;
@@ -83,14 +92,16 @@ void handleNewMessages(int numNewMessages) {
     String text = bot.messages[i].text;
 
     if (text == "/start") {
-      bot.sendMessage(chat_id, "Send 'status' to check temperature and humidity");
+      bot.sendMessage(chat_id, "Send 'status' to check temperature and humidity or /help for additional functions");
     }
 
+    // Basic status command
     if (text == "status") {
       unsigned long currTime = millis();
       unsigned long lastTime = (lastStatusCheck == 0) ? 0 : (currTime - lastStatusCheck) / 1000;
       String lastTimeString = giveElapsedTime(lastTime);
 
+      // Values from previous status check
       String prevStatus = "Last status check: " + lastTimeString;
       prevStatus += "\nPrevious Temperature (F): ";
       prevStatus += prevTempF;
@@ -99,9 +110,11 @@ void handleNewMessages(int numNewMessages) {
       prevStatus += "%";
       prevStatus += "\nPrevious Water Temp (F): ";
       prevStatus += prevWaterTempF;
+      // Set prev values to current values for the next time status is called
       prevTempF = getTempF();
       prevHumidity = getHumidity();
       prevWaterTempF = getWaterTempF();
+      // Values at the time of status check
       String STATUS = "Current Temperature (F): ";
       STATUS += getTempF();
       STATUS += "\nCurrent Humidity: ";
@@ -113,6 +126,133 @@ void handleNewMessages(int numNewMessages) {
       bot.sendMessage(chat_id, STATUS);
       lastStatusCheck = currTime;
       delay(500);
+    }
+
+    // Default help command
+    if (text == "/help") {
+      String helpCommand = "status: Gives you the current air temperature, humidity, and water temperature being detected as well as the temperatues and humidities from the last time the command was used\n";
+      helpCommand += "/alerts help: Gives information on how to view the status of alerts, enable and disable alerts, as well as modify the trigger values of alerts";
+      bot.sendMessage(chat_id, helpCommand);
+    }
+
+    // Command to view if alerts are enabled or disabled as well as high/low values
+    if (text == "/alerts status") {
+      String alertsStatus = "Air Temp Alerts: " + String(sendTempAlerts ? ("Enabled (" + String(airTempMin) + "F min, " + String(airTempMax) + "F max)") : "Disabled") + "\n";
+      alertsStatus += "Humidity Alerts: " + String(sendHumAlerts ? ("Enabled (" + String(airHumMin) + "% min, " + String(airHumMax) + "% max)") : "Disabled") + "\n";
+      alertsStatus += "Water Temp Alerts: " + String(sendWaterAlerts ? ("Enabled (" + String(waterTempMin) + "F min, " + String(waterTempMax) + "F max)") : "Disabled") + "\n";
+      bot.sendMessage(chat_id, alertsStatus);
+      delay(500);
+    }
+
+    // Command to view alert commands and formatting
+    if (text == "/alerts help") {
+      String alertsHelp = "/alerts status: Lists out whether each alert is enabled or disabled\n";
+      alertsHelp += "/alerts enable {alert}: Enable specified alert\n";
+      alertsHelp += "/alerts disable {alert}: Disable specified alert\n";
+      alertsHelp += "/alerts change {alert} {min/max} {value}: Change the minimum or maximum trigger temperature of an alert\n";
+      alertsHelp += "\nairtemp, airhum, and watertemp are the alerts that can be enabled, disabled or modified (e.g. /alerts enable airnum, /alerts change airhum min 50)";
+      bot.sendMessage(chat_id, alertsHelp);
+    }
+
+    // Command for user to enable high/low alerts
+    if (text.startsWith("/alerts enable ")) {
+      String alertType = text.substring(15);
+      if (alertType == "airtemp") { 
+        sendTempAlerts = true;
+        bot.sendMessage(chat_id, "Air temperature alerts have been enabled");
+      }
+      else if (alertType == "airhum") {
+        sendHumAlerts = true;
+        bot.sendMessage(chat_id, "Air humidity alerts have been enabled");
+      }
+      else if (alertType == "watertemp") {
+        sendWaterAlerts = true;
+        bot.sendMessage(chat_id, "Water temperature alerts have been enabled");
+      }
+      else {
+        bot.sendMessage(chat_id, "ERROR: Unrecognized alert, send '/alerts help' to see the list of alerts");
+      }
+    }
+
+    // Command for user to disable high/low alerts
+    if (text.startsWith("/alerts disable ")) {
+      String alertType = text.substring(16);
+      if (alertType == "airtemp") {
+        sendTempAlerts = false;
+        bot.sendMessage(chat_id, "Air temperature alerts have been disabled");
+      }
+      else if (alertType == "airhum") {
+        sendHumAlerts = false;
+        bot.sendMessage(chat_id, "Air humidity alerts have been disabled");
+      }
+      else if (alertType == "watertemp") {
+        sendWaterAlerts = false;
+        bot.sendMessage(chat_id, "Water temperature alerts have been disabled");
+      }
+      else {
+        bot.sendMessage(chat_id, "ERROR: Unrecognized alert, send '/alerts help' to see the list of alerts");
+      }
+    }
+
+    if (text.startsWith("/alerts change ")) {
+      String command = text.substring(15);
+      int firstSpace = command.indexOf(' ');
+      int secondSpace = command.indexOf(' ', firstSpace + 1);
+      int thirdSpace = command.indexOf(' ', secondSpace + 1);
+
+      if (firstSpace != -1 && secondSpace != -1) {
+        String alertType = command.substring(0, firstSpace);
+        String minOrMax = command.substring(firstSpace + 1, secondSpace);
+        String valueStr = command.substring(secondSpace + 1);
+        valueStr.trim();  // Remove whitespace that may interfere with functionality
+        float value = valueStr.toFloat();
+
+        if (alertType == "airtemp") {
+          if (minOrMax == "min") {
+            airTempMin = value;
+            bot.sendMessage(chat_id, "Air temperature minimum changed to " + String(value) + "F");
+          } 
+          else if (minOrMax == "max") {
+            airTempMax = value;
+            bot.sendMessage(chat_id, "Air temperature maximum changed to " + String(value) + "F");
+          } 
+          else {
+            bot.sendMessage(chat_id, "ERROR: Unrecognized paramenters. Please specify either 'min' or 'max' as the value to be modified");
+          }
+        } 
+        else if (alertType == "airhum") {
+          if (minOrMax == "min") {
+            airHumMin = value;
+            bot.sendMessage(chat_id, "Air humidity minimum changed to " + String(airHumMin) + "%");
+          } 
+          else if (minOrMax == "max") {
+            airHumMax = value;
+            bot.sendMessage(chat_id, "Air humidity maximum changed to " + String(airHumMax) + "%");
+          } 
+          else {
+            bot.sendMessage(chat_id, "ERROR: Unrecognized paramenters. Please specify either 'min' or 'max' as the value to be modified");
+          }
+        } 
+        else if (alertType == "watertemp") {
+          if (minOrMax == "min") {
+            waterTempMin = value;
+            bot.sendMessage(chat_id, "Water temperature minimum changed to " + String(value) + "F");
+          } 
+          else if (minOrMax == "max") {
+            waterTempMax = value;
+            bot.sendMessage(chat_id, "Water temperature maximum changed to " + String(value) + "F");
+          } 
+          else {
+            bot.sendMessage(chat_id, "ERROR: Unrecognized paramenters. Please specify either 'min' or 'max' as the value to be modified");
+          }
+        } 
+        else {
+          bot.sendMessage(chat_id, "ERROR: Unrecognized alert type. Send '/alerts help' for more information");
+        }
+      } 
+      else {
+        bot.sendMessage(chat_id, "ERROR: Unrecognized command format. Use '/alerts help' for more information.");
+      }
     }
   }
 }
@@ -167,57 +307,57 @@ void loop() {
     getHumidity();
     getWaterTempF();
     // Alerts for high air temp
-    if (getTempF() >= 100 && tempHighAlert == false) {
-      bot.sendMessage(chat_id, "ALERT: Air temperature is dangerously high!");
+    if (getTempF() >= airTempMax && tempHighAlert == false) {
+      if (sendTempAlerts == true) bot.sendMessage(chat_id, "ALERT: Air temperature is dangerously high!");
       tempHighAlert = true;
     }
-    if (tempHighAlert == true && getTempF() < 100) {
-      bot.sendMessage(chat_id, "Air temperature has normalized");
+    if (tempHighAlert == true && getTempF() < airTempMax) {
+      if (sendTempAlerts == true) bot.sendMessage(chat_id, "Air temperature has normalized");
       tempHighAlert = false;
     }
     // Alerts for low air temp
-    if (getTempF() <= 32 && tempLowAlert == false) {
-      bot.sendMessage(chat_id, "ALERT: Air temperature is dangerously low!");
+    if (getTempF() <= airTempMin && tempLowAlert == false) {
+      if (sendTempAlerts == true) bot.sendMessage(chat_id, "ALERT: Air temperature is dangerously low!");
       tempLowAlert = true;
     }
-    if (tempLowAlert == true && getTempF() > 32) {
-      bot.sendMessage(chat_id, "Air temperature has normalized");
+    if (tempLowAlert == true && getTempF() > airTempMin) {
+      if (sendTempAlerts == true) bot.sendMessage(chat_id, "Air temperature has normalized");
       tempLowAlert = false;
     }
     // Alerts for high humidity
-    if (getHumidity() >= 95 && humHighAlert == false) {
-      bot.sendMessage(chat_id, "ALERT: Air humidity is dangerously high!");
+    if (getHumidity() >= airHumMax && humHighAlert == false) {
+      if (sendHumAlerts == true) bot.sendMessage(chat_id, "ALERT: Air humidity is dangerously high!");
       humHighAlert = true;
     }
-    if (humHighAlert == true && getHumidity() < 95) {
-      bot.sendMessage(chat_id, "Air humidity has normalized");
+    if (humHighAlert == true && getHumidity() < airHumMax) {
+      if (sendHumAlerts == true) bot.sendMessage(chat_id, "Air humidity has normalized");
       humHighAlert = false;
     }
     // Alerts for low humidity
-    if (getHumidity() <= 40 && humLowAlert == false) {
-      bot.sendMessage(chat_id, "ALERT: Air humidity is dangerously low!");
+    if (getHumidity() <= airHumMin && humLowAlert == false) {
+      if (sendHumAlerts == true) bot.sendMessage(chat_id, "ALERT: Air humidity is dangerously low!");
       humLowAlert = true;
     }
-    if (humLowAlert == true && getHumidity() > 40) {
-      bot.sendMessage(chat_id, "Air humidity has normalized");
+    if (humLowAlert == true && getHumidity() > airHumMin) {
+      if (sendHumAlerts == true) bot.sendMessage(chat_id, "Air humidity has normalized");
       humLowAlert = false;
     }
     // Alerts for high water temperature
-    if (getWaterTempF() >= 94 && waterHighAlert == false) {
-      bot.sendMessage(chat_id, "ALERT: Water temperature is dangerously high!");
+    if (getWaterTempF() >= waterTempMax && waterHighAlert == false) {
+      if (sendWaterAlerts == true) bot.sendMessage(chat_id, "ALERT: Water temperature is dangerously high!");
       waterHighAlert = true;
     }
-    if (waterHighAlert == true && getWaterTempF() < 94) {
-      bot.sendMessage(chat_id, "Water temperature has normalized");
+    if (waterHighAlert == true && getWaterTempF() < waterTempMax) {
+      if (sendWaterAlerts == true) bot.sendMessage(chat_id, "Water temperature has normalized");
       waterHighAlert = false;
     }
     // Alerts for low temperature water
-    if (getWaterTempF() <= 40 && waterLowAlert == false) {
-      bot.sendMessage(chat_id, "ALERT: Water temperature is dangerously low!");
+    if (getWaterTempF() <= waterTempMin && waterLowAlert == false) {
+      if (sendWaterAlerts == true) bot.sendMessage(chat_id, "ALERT: Water temperature is dangerously low!");
       waterLowAlert = true;
     }
-    if (waterLowAlert == true && getWaterTempF() > 40) {
-      bot.sendMessage(chat_id, "Water temperature has normalized");
+    if (waterLowAlert == true && getWaterTempF() > waterTempMin) {
+      if (sendWaterAlerts == true) bot.sendMessage(chat_id, "Water temperature has normalized");
       waterLowAlert = false;
     }
     delay(1000);
