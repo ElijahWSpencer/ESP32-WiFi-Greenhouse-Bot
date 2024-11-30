@@ -13,6 +13,10 @@ Alerts are also set to be sent when levels reach a particular high or low level.
 
 ![Screenshot_20240901_173901_Telegram](https://github.com/user-attachments/assets/0fe25a16-532b-47dc-902c-21e7a8b3d357)
 
+Users have the capability to choose which alerts they wish to have enabled and disabled, as well as what they want the minimum and maximum trigger values to be for these alerts. Further information on setting these values is given with **/alerts help**
+
+![Screenshot_20241130_152539_Telegram](https://github.com/user-attachments/assets/06fc0f9a-2655-4df2-abc5-5c62caca6825)
+
 
 ## REQUIRED LIBRARIES:
 
