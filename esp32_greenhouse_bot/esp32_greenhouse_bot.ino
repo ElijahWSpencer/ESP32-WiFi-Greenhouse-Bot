@@ -194,6 +194,7 @@ void handleNewMessages(int numNewMessages) {
       }
     }
 
+    // Command to change high/low alert values
     if (text.startsWith("/alerts change ")) {
       String command = text.substring(15);
       int firstSpace = command.indexOf(' ');
