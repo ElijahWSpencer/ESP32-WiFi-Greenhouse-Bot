@@ -6,17 +6,15 @@ This project was made in order to allow easy viewing of temperature and humidity
 
 Sending **'status'** to the bot will trigger it to send the information.
 
-![Screenshot_20241126_160417_Telegram](https://github.com/user-attachments/assets/ae58207b-ae52-4448-9a92-04d56df3c3e9)
-
+![390155201-ae58207b-ae52-4448-9a92-04d56df3c3e9](https://github.com/user-attachments/assets/33dc756d-efa7-4bec-9bc6-eb748a86f9ed)
 
 Alerts are also set to be sent when levels reach a particular high or low level. An alert is then sent again whenever levels normalize.
 
-![Screenshot_20240901_173901_Telegram](https://github.com/user-attachments/assets/0fe25a16-532b-47dc-902c-21e7a8b3d357)
+![366109144-0fe25a16-532b-47dc-902c-21e7a8b3d357](https://github.com/user-attachments/assets/2553dccc-97b8-4d7d-b230-16b79c5fb51b)
 
 Users have the capability to choose which alerts they wish to have enabled and disabled, as well as what they want the minimum and maximum trigger values to be for these alerts. Further information on setting these values is given with the in-app command **/alerts help**
 
-![Screenshot_20241130_152539_Telegram](https://github.com/user-attachments/assets/06fc0f9a-2655-4df2-abc5-5c62caca6825)
-
+![391294071-06fc0f9a-2655-4df2-abc5-5c62caca6825](https://github.com/user-attachments/assets/e87b3427-0faa-432d-b8bb-ecf08816ae19)
 
 ## REQUIRED LIBRARIES:
 
@@ -31,9 +29,10 @@ Users have the capability to choose which alerts they wish to have enabled and d
 
 Here is an example of what the hardware for this project looks like
 
-![20240807_193910](https://github.com/user-attachments/assets/a13f7632-ebe1-4441-b7a9-5b3d2256016f)
+![366109970-a13f7632-ebe1-4441-b7a9-5b3d2256016f](https://github.com/user-attachments/assets/ed9a4ff8-2755-4de9-8188-53c10201fb9e)
 
-![20240807_193915](https://github.com/user-attachments/assets/388c4117-0072-43f4-988c-48b49d355001)
+![366110122-388c4117-0072-43f4-988c-48b49d355001](https://github.com/user-attachments/assets/e57160f8-d6ff-490b-bb23-ab9e89670352)
+
 
 ## HARDWARE USED
 
